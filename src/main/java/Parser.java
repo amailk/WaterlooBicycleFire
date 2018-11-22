@@ -1,56 +1,57 @@
-
-
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Scanner;
+import java.util.List;
 
 public class Parser {
     public static void main(String[] args) {
-        String csvFile = "C:\\Users\\Nandani\\cp104\\ws\\cp213ws\\bicycle\\src\\Bicycle_Parking.csv";
+        String csvFile = "Bicycle_Parking.csv";
         String line = "";
-        //String cvsSplitBy = ",";
-        ArrayList<ParkingSpot> parkingSpotList = new ArrayList();
+        String cvsSplitBy = ",";
+        BufferedReader br = null;
 
-        File file = new File(csvFile);
+
+        List<ParkingSpot> parkingSpotList = new ArrayList<>();
+
         try {
-            Scanner sc = new Scanner(file);
+            br = new BufferedReader(new FileReader(csvFile));
 
-            try {
+                while (line = br.readLine()) {
 
-                while (sc.hasNextLine()) {
-                    line = sc.next();
-
-                    String[] s = line.split(",");
-                    String type = s[3];
-                    String description = s[5];
-                    String address = s[6];
+                    String[] s = line.split(cvsSplitBy);
+                    String type = s[3].trim();
+                    String description = s[5].trim();
+                    String address = s[6].trim();
                     int capacity = 0;
                     try {
-                        if (!s[7].equals("")) {
-                            capacity = Integer.parseInt(s[8]);
-                        }
+                        capacity = Integer.parseInt(s[8].trim());
                     } catch (NumberFormatException e) {
-                        System.out.println("invalid input");
                     }
-                    int longitude = Integer.parseInt(s[8]);
-                    int latitude = Integer.parseInt(s[9]);
-                    ParkingSpot parkingSpotObject = new ParkingSpot(type, description, address, capacity, longitude, latitude);
-                    ParkingSpotList.add(parkingSpotObject);
+                    float longitude = Float.parseFloat(s[8].trim());
+                    float latitude = Float.parseFloat(s[9].trim());
+
+
+                    ParkingSpot parkingSpotObject = new ParkingSpot(type, longitude, latitude, description, address, capacity);
+                    parkingSpotList.add(parkingSpotObject);
 
                 }
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } finally {
-                if (sc != null) {
+                if (br != null) {
                     try {
-                        sc.close();
+                        br.close();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
             }
+
+            FirebaseService firebaseService = new FirebaseService();
+            firebaseService.uploadData(parkingSpotList);
         }
     }
 }
